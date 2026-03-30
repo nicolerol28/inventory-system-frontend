@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
+import { Layout } from "./components/Layout";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { Forbidden } from "./pages/Forbidden";
@@ -8,24 +9,24 @@ import { Forbidden } from "./pages/Forbidden";
 export default function App() {
   return (
     <Routes>
-      {/* Publica */}
       <Route path="/login" element={<Login />} />
       <Route path="/forbidden" element={<Forbidden />} />
 
-      {/* Protegidas — requieren autenticacion */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-
-        {/* Solo ADMIN */}
-        <Route element={<AdminRoute />}>
-          <Route path="/users" element={<div>Usuarios</div>} />
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/products" element={<div className="text-gray-500 dark:text-gray-400">Productos — próximamente</div>} />
+          <Route path="/inventory" element={<div className="text-gray-500 dark:text-gray-400">Inventario — próximamente</div>} />
+          <Route path="/movements" element={<div className="text-gray-500 dark:text-gray-400">Movimientos — próximamente</div>} />
+          <Route path="/suppliers" element={<div className="text-gray-500 dark:text-gray-400">Proveedores — próximamente</div>} />
+          <Route path="/warehouses" element={<div className="text-gray-500 dark:text-gray-400">Almacenes — próximamente</div>} />
+          <Route element={<AdminRoute />}>
+            <Route path="/users" element={<div className="text-gray-500 dark:text-gray-400">Usuarios — próximamente</div>} />
+          </Route>
         </Route>
       </Route>
 
-      {/* Ruta raiz */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-      {/* Cualquier ruta desconocida */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
