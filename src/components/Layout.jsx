@@ -12,6 +12,7 @@ const navItems = [
 ];
 
 const adminItems = [
+  { to: "/settings", label: "Configuración" },
   { to: "/users", label: "Usuarios" },
 ];
 
