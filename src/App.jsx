@@ -7,6 +7,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Forbidden } from "./pages/Forbidden";
 import { Products } from "./pages/Products";
 import { Suppliers } from "./pages/Suppliers";
+import { Warehouses } from "./pages/Warehouses";
 
 export default function App() {
   return (
@@ -20,7 +21,7 @@ export default function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/movements" element={<div className="text-gray-500 dark:text-gray-400">Movimientos — próximamente</div>} />
           <Route path="/suppliers" element={<Suppliers />} />
-          <Route path="/warehouses" element={<div className="text-gray-500 dark:text-gray-400">Almacenes — próximamente</div>} />
+          <Route path="/warehouses" element={<Warehouses />} />
           <Route element={<AdminRoute />}>
             <Route path="/settings" element={<div className="text-gray-500 dark:text-gray-400">Configuración — próximamente</div>} />
             <Route path="/users" element={<div className="text-gray-500 dark:text-gray-400">Usuarios — próximamente</div>} />
