@@ -243,6 +243,9 @@ export function Products() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
+    onError: (error) => {
+      alert(error.response?.data?.message ?? "Error al desactivar el producto.");
+    },
   });
 
   function openCreate() {
