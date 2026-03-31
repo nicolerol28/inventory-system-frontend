@@ -6,7 +6,7 @@ export function useDarkMode() {
   });
 
   useEffect(() => {
-    const root = document.documentElement;
+    const root = document.getElementById("root");
     if (isDark) {
       root.classList.add("dark");
       localStorage.setItem("theme", "dark");
