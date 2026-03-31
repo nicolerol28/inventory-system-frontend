@@ -5,6 +5,7 @@ import { Layout } from "./components/Layout";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { Forbidden } from "./pages/Forbidden";
+import { Products } from "./pages/Products";
 
 export default function App() {
   return (
@@ -15,11 +16,12 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/products" element={<div className="text-gray-500 dark:text-gray-400">Productos — próximamente</div>} />
+          <Route path="/products" element={<Products />} />
           <Route path="/movements" element={<div className="text-gray-500 dark:text-gray-400">Movimientos — próximamente</div>} />
           <Route path="/suppliers" element={<div className="text-gray-500 dark:text-gray-400">Proveedores — próximamente</div>} />
           <Route path="/warehouses" element={<div className="text-gray-500 dark:text-gray-400">Almacenes — próximamente</div>} />
           <Route element={<AdminRoute />}>
+            <Route path="/settings" element={<div className="text-gray-500 dark:text-gray-400">Configuración — próximamente</div>} />
             <Route path="/users" element={<div className="text-gray-500 dark:text-gray-400">Usuarios — próximamente</div>} />
           </Route>
         </Route>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { getProducts } from "../api/products";
+import { getAllProducts } from "../api/products";
 import { getSuppliers } from "../api/suppliers";
 import { getWarehouses, getActiveWarehouses } from "../api/warehouses";
 import { getStockByWarehouse } from "../api/inventory";
@@ -111,7 +111,7 @@ export function Dashboard() {
 
   const { data: products, isLoading: loadingProducts } = useQuery({
     queryKey: ["products-count"],
-    queryFn: () => getProducts(0, 1),
+    queryFn: () => getAllProducts(0, 1),
   });
 
   const { data: suppliers, isLoading: loadingSuppliers } = useQuery({
