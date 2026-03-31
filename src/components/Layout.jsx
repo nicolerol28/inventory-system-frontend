@@ -1,11 +1,11 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useDarkMode } from "../hooks/useDarkMode";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/products", label: "Productos" },
-  { to: "/inventory", label: "Inventario" },
   { to: "/movements", label: "Movimientos" },
   { to: "/suppliers", label: "Proveedores" },
   { to: "/warehouses", label: "Almacenes" },
@@ -37,10 +37,27 @@ export function Layout() {
   const { user, logout } = useAuth();
   const { isDark, toggle } = useDarkMode();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchInput, setSearchInput] = useState("");
 
   function handleLogout() {
     logout();
     navigate("/login");
+  }
+
+  function handleSearch(e) {
+    if (e.key === "Enter") {
+      if (searchInput.trim()) {
+        navigate(`${location.pathname}?search=${encodeURIComponent(searchInput.trim())}`);
+      } else {
+        navigate(location.pathname);
+      }
+    }
+  }
+
+  function handleClearSearch() {
+    setSearchInput("");
+    navigate(location.pathname);
   }
 
   const initials = user?.sub
@@ -169,7 +186,22 @@ export function Layout() {
                   strokeWidth="2" className="text-gray-400 flex-shrink-0">
                   <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
-                <span className="text-xs text-gray-400">Buscar productos...</span>
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={handleSearch}
+                  placeholder="Buscar..."
+                  className="flex-1 text-xs bg-transparent text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none"
+                />
+                {searchInput && (
+                  <button
+                    onClick={handleClearSearch}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
 
               {/* Dark mode toggle */}

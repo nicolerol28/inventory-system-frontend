@@ -16,7 +16,6 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/products" element={<div className="text-gray-500 dark:text-gray-400">Productos — próximamente</div>} />
-          <Route path="/inventory" element={<div className="text-gray-500 dark:text-gray-400">Inventario — próximamente</div>} />
           <Route path="/movements" element={<div className="text-gray-500 dark:text-gray-400">Movimientos — próximamente</div>} />
           <Route path="/suppliers" element={<div className="text-gray-500 dark:text-gray-400">Proveedores — próximamente</div>} />
           <Route path="/warehouses" element={<div className="text-gray-500 dark:text-gray-400">Almacenes — próximamente</div>} />
