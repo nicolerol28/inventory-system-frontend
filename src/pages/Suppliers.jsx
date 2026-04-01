@@ -144,11 +144,12 @@ export function Suppliers() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [filterActive, setFilterActive] = useState("all");
+  const [sortName, setSortName] = useState("asc");
   const [errorMsg, setErrorMsg] = useState(null);
 
   const { data: suppliers, isLoading } = useQuery({
-    queryKey: ["suppliers", page, urlSearch, filterActive],
-    queryFn: () => getSuppliers(page, PAGE_SIZE, urlSearch, filterActive),
+    queryKey: ["suppliers", page, urlSearch, filterActive, sortName],
+    queryFn: () => getSuppliers(page, PAGE_SIZE, urlSearch, filterActive, sortName),
   });
 
   const createMutation = useMutation({
@@ -259,10 +260,18 @@ export function Suppliers() {
             ))}
           </div>
 
+          {/* Ordenamiento */}
+          <button
+            onClick={() => { setSortName(prev => prev === "asc" ? "desc" : "asc"); setPage(0); }}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+          >
+            Nombre {sortName === "asc" ? "A→Z" : "Z→A"}
+          </button>
+
           {/* Limpiar filtros */}
-          {filterActive !== "all" && (
+          {(filterActive !== "all" || sortName !== "asc") && (
             <button
-              onClick={() => { setFilterActive("all"); setPage(0); }}
+              onClick={() => { setFilterActive("all"); setSortName("asc"); setPage(0); }}
               className="px-3 py-1.5 rounded-lg text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
             >
               Limpiar filtros

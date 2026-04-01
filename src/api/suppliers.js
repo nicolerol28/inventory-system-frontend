@@ -1,8 +1,8 @@
 import axiosClient from "./axiosClient";
 
-export const getSuppliers = (page = 0, size = 20, name = "", filterActive = "all") =>
+export const getSuppliers = (page = 0, size = 20, name = "", filterActive = "all", sortName = "asc") =>
   axiosClient.get(`/suppliers`, {
-    params: { page, size, name: name || undefined, filterActive }
+    params: { page, size, name: name || undefined, filterActive, sortName }
   }).then(r => r.data);
 
 export const getActiveSuppliers = () =>

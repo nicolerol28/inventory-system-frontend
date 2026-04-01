@@ -9,6 +9,7 @@ import { Products } from "./pages/Products";
 import { Suppliers } from "./pages/Suppliers";
 import { Warehouses } from "./pages/Warehouses";
 import { Movements } from "./pages/Movements";
+import { Settings } from "./pages/Settings";
 
 export default function App() {
   return (
@@ -24,7 +25,7 @@ export default function App() {
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/warehouses" element={<Warehouses />} />
           <Route element={<AdminRoute />}>
-            <Route path="/settings" element={<div className="text-gray-500 dark:text-gray-400">Configuración — próximamente</div>} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/users" element={<div className="text-gray-500 dark:text-gray-400">Usuarios — próximamente</div>} />
           </Route>
         </Route>
