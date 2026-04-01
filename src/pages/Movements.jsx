@@ -190,7 +190,6 @@ function MovementForm({ warehouseId, warehouseName, products, suppliers, userId,
 
 export function Movements() {
   const { user } = useAuth();
-  const isAdmin = user?.role === "ADMIN";
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(0);
@@ -293,14 +292,12 @@ export function Movements() {
             {movements?.totalElements ?? 0} movimientos en total
           </p>
         </div>
-        {isAdmin && (
-          <button
-            onClick={() => setIsPanelOpen(true)}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-          >
-            + Nuevo movimiento
-          </button>
-        )}
+        <button
+        onClick={() => setIsPanelOpen(true)}
+        className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+        >
+        + Nuevo movimiento
+        </button>
       </div>
 
       {/* Tabla */}
