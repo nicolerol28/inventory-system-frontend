@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { getAllProducts } from "../api/products";
-import { getSuppliers } from "../api/suppliers";
-import { getWarehouses, getActiveWarehouses } from "../api/warehouses";
+import { getActiveSuppliers } from "../api/suppliers";
+import { getActiveWarehouses } from "../api/warehouses";
 import { getStockByWarehouse } from "../api/inventory";
 
 function StatCard({ label, value, isLoading }) {
@@ -22,12 +22,12 @@ function StatCard({ label, value, isLoading }) {
 
 function StockBadge({ belowMinimum }) {
   return (
-    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium inline-block text-center w-24 ${
       belowMinimum
         ? "bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400"
         : "bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400"
     }`}>
-      {belowMinimum ? "BAJO MÍNIMO" : "OK"}
+      {belowMinimum ? "Bajo mínimo" : "Sobre mínimo"}
     </span>
   );
 }
@@ -107,21 +107,16 @@ export function Dashboard() {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
   const [stockPage, setStockPage] = useState(0);
   const [sortOrder, setSortOrder] = useState("asc");
-  const PAGE_SIZE = 5;
+  const PAGE_SIZE = 10;
 
   const { data: products, isLoading: loadingProducts } = useQuery({
     queryKey: ["products-count"],
     queryFn: () => getAllProducts(0, 1),
   });
 
-  const { data: suppliers, isLoading: loadingSuppliers } = useQuery({
-    queryKey: ["suppliers-count"],
-    queryFn: () => getSuppliers(0, 1),
-  });
-
-  const { data: warehousesPage, isLoading: loadingWarehouses } = useQuery({
-    queryKey: ["warehouses-count"],
-    queryFn: () => getWarehouses(0, 1),
+  const { data: activeSuppliers, isLoading: loadingSuppliers } = useQuery({
+    queryKey: ["suppliers-active"],
+    queryFn: getActiveSuppliers,
   });
 
   const { data: activeWarehouses, isLoading: loadingActive } = useQuery({
@@ -137,17 +132,19 @@ export function Dashboard() {
     enabled: !!activeWarehouseId,
   });
 
-  const { data: stockChart } = useQuery({
-    queryKey: ["stock-warehouse-chart", activeWarehouseId, sortOrder],
-    queryFn: () => getStockByWarehouse(activeWarehouseId, 0, 10, "", sortOrder),
+  const { data: stockAll } = useQuery({
+    queryKey: ["stock-warehouse-all", activeWarehouseId],
+    queryFn: () => getStockByWarehouse(activeWarehouseId, 0, 1000, "", "asc"),
     enabled: !!activeWarehouseId,
   });
 
-  const chartData = stockChart?.content?.map((s) => ({
-    name: s.productName ?? `#${s.productId}`,
-    cantidad: parseFloat(s.quantity),
-    belowMinimum: s.belowMinimum,
-  })) ?? [];
+  const chartData = stockAll?.content
+    ?.filter((s) => s.belowMinimum)
+    .map((s) => ({
+      name: s.productName ?? `#${s.productId}`,
+      cantidad: parseFloat(s.quantity),
+      belowMinimum: true,
+    })) ?? [];
 
   function handleWarehouseChange(id) {
     setSelectedWarehouseId(id);
@@ -165,8 +162,8 @@ export function Dashboard() {
       {/* Métricas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard label="Total productos" value={products?.totalElements} isLoading={loadingProducts}/>
-        <StatCard label="Proveedores" value={suppliers?.totalElements} isLoading={loadingSuppliers}/>
-        <StatCard label="Almacenes" value={warehousesPage?.totalElements} isLoading={loadingWarehouses}/>
+        <StatCard label="Proveedores" value={activeSuppliers?.length} isLoading={loadingSuppliers}/>
+        <StatCard label="Almacenes" value={activeWarehouses?.length} isLoading={loadingActive}/>
       </div>
 
       {/* Stock por almacén */}
@@ -241,7 +238,11 @@ export function Dashboard() {
                     <td className="px-6 py-3 text-sm text-gray-700 dark:text-gray-300">{s.productName ?? `Producto #${s.productId}`}</td>
                     <td className="px-6 py-3 text-sm text-gray-700 dark:text-gray-300">{s.quantity}</td>
                     <td className="px-6 py-3 text-sm text-gray-500 dark:text-gray-500">{s.minQuantity}</td>
-                    <td className="px-6 py-3"><StockBadge belowMinimum={s.belowMinimum}/></td>
+                    <td className="px-6 py-3">
+                      <div className="flex justify-start">
+                        <StockBadge belowMinimum={s.belowMinimum}/>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -252,28 +253,35 @@ export function Dashboard() {
       </div>
 
       {/* Gráfica */}
-      {chartData.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 transition-colors duration-300">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-6">
-            Top 10 productos por cantidad
-          </h2>
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 24, left: 8, bottom: 0 }}>
-              <XAxis type="number" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false}/>
-              <YAxis type="category" dataKey="name" width={180} tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false}/>
-              <Tooltip content={<CustomTooltip/>} cursor={{ fill: "rgba(37,99,235,0.05)" }}/>
-              <Bar dataKey="cantidad" radius={[0, 6, 6, 0]} maxBarSize={20}>
-                {chartData.map((entry, index) => (
-                  <Cell key={index} fill={entry.belowMinimum ? "#FCA5A5" : "#2563EB"}/>
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          <p className="text-[10px] text-gray-400 dark:text-gray-600 mt-4">
-            Barras rojas indican stock por debajo del mínimo requerido.
+      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 transition-colors duration-300">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-6">
+          Productos bajo mínimo
+        </h2>
+        {chartData.length > 0 ? (
+          <>
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 24, left: 8, bottom: 0 }}>
+                <XAxis type="number" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false}/>
+                <YAxis type="category" dataKey="name" width={180} tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false}/>
+                <Tooltip content={<CustomTooltip/>} cursor={{ fill: "rgba(37,99,235,0.05)" }}/>
+                <Bar dataKey="cantidad" radius={[0, 6, 6, 0]} maxBarSize={20}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={index} fill="#FCA5A5"/>
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <p className="text-[10px] text-gray-400 dark:text-gray-600 mt-4">
+              Productos cuyo stock actual está por debajo del mínimo requerido.
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-gray-400 dark:text-gray-600 text-center py-10">
+            ✓ Todos los productos tienen stock suficiente.
           </p>
-        </div>
-      )}
+        )}
+      </div>
+
     </div>
   );
 }

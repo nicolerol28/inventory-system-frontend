@@ -11,12 +11,12 @@ const PAGE_SIZE = 10;
 
 function Badge({ active }) {
   return (
-    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-    active
+    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium inline-block text-center w-20 ${
+      active
         ? "bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400"
         : "bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400"
     }`}>
-    {active ? "Activo" : "Inactivo"}
+      {active ? "Activo" : "Inactivo"}
     </span>
   );
 }
@@ -434,6 +434,7 @@ export function Products() {
                   <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">Descripción</th>
                   <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">Unidad</th>
                   <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">Categoría</th>
+                  <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">Proveedor</th>
                   <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">P. Compra</th>
                     <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">P. Venta</th>
                   <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">Estado</th>
@@ -451,6 +452,9 @@ export function Products() {
                     </td>
                     <td className="px-6 py-3 text-sm text-gray-500 dark:text-gray-400">
                       {categories?.find(c => c.id === p.categoryId)?.name ?? `#${p.categoryId}`}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-gray-500 dark:text-gray-400">
+                      {suppliers?.find(s => s.id === p.supplierId)?.name ?? `#${p.supplierId}`}
                     </td>
                     <td className="px-6 py-3 text-sm text-gray-500 dark:text-gray-400">
                         {p.purchasePrice ? `$${Number(p.purchasePrice).toLocaleString("es-CO")}` : "—"}

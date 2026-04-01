@@ -8,7 +8,7 @@ const PAGE_SIZE = 10;
 
 function Badge({ active }) {
   return (
-    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium inline-block text-center w-20 ${
       active
         ? "bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400"
         : "bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400"
