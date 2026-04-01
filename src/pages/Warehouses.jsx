@@ -138,11 +138,12 @@ export function Warehouses() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [filterActive, setFilterActive] = useState("all");
+  const [sortName, setSortName] = useState("asc");
   const [errorMsg, setErrorMsg] = useState(null);
 
   const { data: warehouses, isLoading } = useQuery({
-    queryKey: ["warehouses", page, urlSearch, filterActive],
-    queryFn: () => getWarehouses(page, PAGE_SIZE, urlSearch, filterActive),
+    queryKey: ["warehouses", page, urlSearch, filterActive, sortName],
+    queryFn: () => getWarehouses(page, PAGE_SIZE, urlSearch, filterActive, sortName),
   });
 
   const createMutation = useMutation({
@@ -248,9 +249,17 @@ export function Warehouses() {
             ))}
           </div>
 
-          {filterActive !== "all" && (
+          {/* Ordenamiento */}
+          <button
+            onClick={() => { setSortName(prev => prev === "asc" ? "desc" : "asc"); setPage(0); }}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+          >
+            Nombre {sortName === "asc" ? "A→Z" : "Z→A"}
+          </button>
+
+          {(filterActive !== "all" || sortName !== "asc") && (
             <button
-              onClick={() => { setFilterActive("all"); setPage(0); }}
+              onClick={() => { setFilterActive("all"); setSortName("asc"); setPage(0); }}
               className="px-3 py-1.5 rounded-lg text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
             >
               Limpiar filtros

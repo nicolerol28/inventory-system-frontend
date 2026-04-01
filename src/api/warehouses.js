@@ -1,8 +1,8 @@
 import axiosClient from "./axiosClient";
 
-export const getWarehouses = (page = 0, size = 20, name = "", filterActive = "all") =>
+export const getWarehouses = (page = 0, size = 20, name = "", filterActive = "all", sortName = "asc") =>
   axiosClient.get(`/warehouses`, {
-    params: { page, size, name: name || undefined, filterActive }
+    params: { page, size, name: name || undefined, filterActive, sortName }
   }).then(r => r.data);
 
 export const getActiveWarehouses = () =>
