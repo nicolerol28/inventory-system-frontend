@@ -62,11 +62,11 @@ export function Layout() {
     navigate(location.pathname);
   }
 
-  const initials = user?.sub
-    ? user.sub.split("@")[0].slice(0, 2).toUpperCase()
-    : "U";
+  const initials = user?.name
+  ? user.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
+  : user?.sub?.split("@")[0].slice(0, 2).toUpperCase() ?? "U";
 
-  const username = user?.sub?.split("@")[0] ?? "Usuario";
+  const username = user?.name ?? user?.sub?.split("@")[0] ?? "Usuario";
 
   return (
     <div className={isDark ? "dark" : ""}>
