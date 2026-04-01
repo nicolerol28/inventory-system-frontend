@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { getAllProducts } from "../api/products";
 import { getActiveSuppliers } from "../api/suppliers";
 import { getActiveWarehouses } from "../api/warehouses";
-import { getStockByWarehouse } from "../api/inventory";
+import { getStockByWarehouse, updateMinQuantity } from "../api/inventory";
+import { useAuth } from "../hooks/useAuth";
 
 function StatCard({ label, value, isLoading }) {
   return (
@@ -101,13 +102,33 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 export function Dashboard() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
+  const queryClient = useQueryClient();
+
   const [searchParams] = useSearchParams();
   const urlSearch = searchParams.get("search") ?? "";
 
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
   const [stockPage, setStockPage] = useState(0);
   const [sortOrder, setSortOrder] = useState("asc");
+  const [editingStock, setEditingStock] = useState(null);
+  const [minInput, setMinInput] = useState("");
   const PAGE_SIZE = 10;
+
+  const updateMinMutation = useMutation({
+    mutationFn: ({ stockId, minQuantity }) => updateMinQuantity(stockId, minQuantity),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stock-warehouse"] });
+      queryClient.invalidateQueries({ queryKey: ["stock-warehouse-all"] });
+      setEditingStock(null);
+    },
+  });
+
+  function handleEditMin(s) {
+    setEditingStock(s);
+    setMinInput(String(s.minQuantity ?? "0"));
+  }
 
   const { data: products, isLoading: loadingProducts } = useQuery({
     queryKey: ["products-count"],
@@ -228,7 +249,7 @@ export function Dashboard() {
                 <tr className="text-left">
                   <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">Producto</th>
                   <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">Cantidad</th>
-                  <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">Mínimo</th>
+                  <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">Mín.</th>
                   <th className="px-6 py-3 text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">Estado</th>
                 </tr>
               </thead>
@@ -237,7 +258,23 @@ export function Dashboard() {
                   <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <td className="px-6 py-3 text-sm text-gray-700 dark:text-gray-300">{s.productName ?? `Producto #${s.productId}`}</td>
                     <td className="px-6 py-3 text-sm text-gray-700 dark:text-gray-300">{s.quantity}</td>
-                    <td className="px-6 py-3 text-sm text-gray-500 dark:text-gray-500">{s.minQuantity}</td>
+                    <td className="px-6 py-3 text-sm text-gray-500 dark:text-gray-500">
+                      <div className="flex items-center gap-2">
+                        {s.minQuantity}
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleEditMin(s)}
+                            className="p-1 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
+                            title="Editar mínimo"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-6 py-3">
                       <div className="flex justify-start">
                         <StockBadge belowMinimum={s.belowMinimum}/>
@@ -281,6 +318,47 @@ export function Dashboard() {
           </p>
         )}
       </div>
+
+      {/* Modal editar mínimo */}
+      {editingStock && (
+        <>
+          <div className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40" onClick={() => setEditingStock(null)}/>
+          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <div className="pointer-events-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-6 w-80 flex flex-col gap-4">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Editar cantidad mínima</h3>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{editingStock.productName}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Cantidad mínima</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={minInput}
+                  onChange={(e) => setMinInput(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setEditingStock(null)}
+                  className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => updateMinMutation.mutate({ stockId: editingStock.id, minQuantity: Number(minInput) })}
+                  disabled={updateMinMutation.isPending}
+                  className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  {updateMinMutation.isPending ? "Guardando..." : "Guardar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
     </div>
   );

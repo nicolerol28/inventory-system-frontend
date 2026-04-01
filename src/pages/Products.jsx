@@ -6,6 +6,7 @@ import { getAllProducts, createProduct, updateProduct, deactivateProduct } from 
 import { getActiveCategories } from "../api/categories";
 import { getActiveUnits } from "../api/units";
 import { getActiveSuppliers } from "../api/suppliers";
+import SearchableSelect from "../components/SearchableSelect";
 
 const PAGE_SIZE = 10;
 
@@ -127,24 +128,30 @@ function ProductForm({ product, categories, units, suppliers, onSubmit, onClose,
       </div>
       <div>
         <label className={labelClass}>Unidad *</label>
-        <select name="unitId" value={form.unitId} onChange={handleChange} required className={inputClass}>
-          <option value="">Selecciona una unidad</option>
-          {units?.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-        </select>
+        <SearchableSelect
+          options={units ?? []}
+          value={form.unitId || null}
+          onChange={(id) => setForm(f => ({ ...f, unitId: id }))}
+          placeholder="Selecciona una unidad"
+        />
       </div>
       <div>
         <label className={labelClass}>Categoría *</label>
-        <select name="categoryId" value={form.categoryId} onChange={handleChange} required className={inputClass}>
-          <option value="">Selecciona una categoría</option>
-          {categories?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+        <SearchableSelect
+          options={categories ?? []}
+          value={form.categoryId || null}
+          onChange={(id) => setForm(f => ({ ...f, categoryId: id }))}
+          placeholder="Selecciona una categoría"
+        />
       </div>
       <div>
         <label className={labelClass}>Proveedor</label>
-        <select name="supplierId" value={form.supplierId} onChange={handleChange} className={inputClass}>
-          <option value="">Sin proveedor</option>
-          {suppliers?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
+        <SearchableSelect
+          options={suppliers ?? []}
+          value={form.supplierId || null}
+          onChange={(id) => setForm(f => ({ ...f, supplierId: id }))}
+          placeholder="Sin proveedor"
+        />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>

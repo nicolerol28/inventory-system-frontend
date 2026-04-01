@@ -39,6 +39,7 @@ export function Layout() {
   const { isDark, toggle } = useDarkMode();
   const navigate = useNavigate();
   const location = useLocation();
+  const hideSearch = location.pathname === "/movements";
   const [searchInput, setSearchInput] = useState("");
 
   function handleLogout() {
@@ -182,28 +183,30 @@ export function Layout() {
 
             <div className="flex items-center gap-3">
               {/* Search */}
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 w-52 transition-colors duration-300">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  strokeWidth="2" className="text-gray-400 flex-shrink-0">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <input
-                  type="text"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyDown={handleSearch}
-                  placeholder="Buscar..."
-                  className="flex-1 text-xs bg-transparent text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none"
-                />
-                {searchInput && (
-                  <button
-                    onClick={handleClearSearch}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
+              {!hideSearch && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 w-52 transition-colors duration-300">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth="2" className="text-gray-400 flex-shrink-0">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={handleSearch}
+                    placeholder="Buscar..."
+                    className="flex-1 text-xs bg-transparent text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none"
+                  />
+                  {searchInput && (
+                    <button
+                      onClick={handleClearSearch}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Dark mode toggle */}
               <button
