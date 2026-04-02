@@ -9,9 +9,11 @@ export function useDarkMode() {
     const root = document.getElementById("root");
     if (isDark) {
       root.classList.add("dark");
+      document.documentElement.classList.add("dark");
       localStorage.setItem("theme", "dark");
     } else {
       root.classList.remove("dark");
+      document.documentElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
     }
   }, [isDark]);
