@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { loginRequest } from "../api/auth";
@@ -24,10 +24,6 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.classList.remove("dark");
-  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
