@@ -7,14 +7,15 @@ export function useDarkMode() {
 
   useEffect(() => {
     const root = document.getElementById("root");
+    const meta = document.querySelector('meta[name="theme-color"]');
     if (isDark) {
       root.classList.add("dark");
-      document.documentElement.classList.add("dark");
       localStorage.setItem("theme", "dark");
+      if (meta) meta.setAttribute("content", "#030712");
     } else {
       root.classList.remove("dark");
-      document.documentElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
+      if (meta) meta.setAttribute("content", "#ffffff");
     }
   }, [isDark]);
 
