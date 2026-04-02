@@ -313,6 +313,7 @@ export function Users() {
           </p>
         ) : (
           <>
+            <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="text-left">
@@ -369,6 +370,7 @@ export function Users() {
                 ))}
               </tbody>
             </table>
+            </div>
             <Pagination page={page} totalPages={users?.totalPages ?? 0} onPageChange={setPage}/>
           </>
         )}
@@ -378,7 +380,7 @@ export function Users() {
       {isPanelOpen && (
         <>
           <div className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40" onClick={closePanel}/>
-          <div className="fixed right-0 top-0 h-full w-96 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 z-50 flex flex-col shadow-xl">
+          <div className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 z-50 flex flex-col shadow-xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
                 {selectedUser ? "Editar usuario" : "Nuevo usuario"}
