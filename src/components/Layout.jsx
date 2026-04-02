@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useDarkMode } from "../hooks/useDarkMode";
+import { ReAuthModal } from "./ReAuthModal";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard" },
@@ -251,6 +252,7 @@ export function Layout() {
           </main>
         </div>
       </div>
+      <ReAuthModal />
     </div>
   );
 }
