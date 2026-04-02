@@ -203,7 +203,7 @@ export function Dashboard() {
           {loadingActive ? (
             <div className="h-8 w-40 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"/>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {activeWarehouses?.map((w) => (
                 <button
                   key={w.id}
@@ -244,6 +244,7 @@ export function Dashboard() {
           </p>
         ) : (
           <>
+            <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="text-left">
@@ -284,6 +285,7 @@ export function Dashboard() {
                 ))}
               </tbody>
             </table>
+            </div>
             <Pagination page={stockPage} totalPages={stock?.totalPages ?? 0} onPageChange={setStockPage}/>
           </>
         )}
@@ -299,7 +301,7 @@ export function Dashboard() {
             <ResponsiveContainer width="100%" height={320}>
               <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 24, left: 8, bottom: 0 }}>
                 <XAxis type="number" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false}/>
-                <YAxis type="category" dataKey="name" width={180} tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false}/>
+                <YAxis type="category" dataKey="name" width={63} tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false}/>
                 <Tooltip content={<CustomTooltip/>} cursor={{ fill: "rgba(37,99,235,0.05)" }}/>
                 <Bar dataKey="cantidad" radius={[0, 6, 6, 0]} maxBarSize={20}>
                   {chartData.map((entry, index) => (

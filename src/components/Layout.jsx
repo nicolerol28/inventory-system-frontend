@@ -41,6 +41,7 @@ export function Layout() {
   const location = useLocation();
   const hideSearch = location.pathname === "/movements";
   const [searchInput, setSearchInput] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   function handleLogout() {
     logout();
@@ -72,8 +73,16 @@ export function Layout() {
     <div className={isDark ? "dark" : ""}>
       <div className="flex h-screen bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-200 transition-colors duration-300 overflow-hidden">
 
+        {/* Overlay (mobile only) */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <aside className="w-56 flex-shrink-0 flex flex-col bg-blue-50 dark:bg-gray-900 border-r border-blue-100 dark:border-gray-800 transition-colors duration-300">
+        <aside className={`fixed inset-y-0 left-0 z-50 w-56 flex-shrink-0 flex flex-col bg-blue-50 dark:bg-gray-900 border-r border-blue-100 dark:border-gray-800 transition-transform duration-300 lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
 
           {/* Logo */}
           <div className="px-5 py-6 border-b border-blue-100 dark:border-gray-800">
@@ -100,6 +109,7 @@ export function Layout() {
               <NavLink
                 key={item.to}
                 to={item.to}
+                onClick={() => setSidebarOpen(false)}
                 className={({ isActive }) =>
                   `flex items-center px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
                     isActive
@@ -122,6 +132,7 @@ export function Layout() {
                   <NavLink
                     key={item.to}
                     to={item.to}
+                    onClick={() => setSidebarOpen(false)}
                     className={({ isActive }) =>
                       `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
                         isActive
@@ -169,11 +180,21 @@ export function Layout() {
 
           {/* Header */}
           <header className="h-16 flex-shrink-0 flex items-center justify-between px-8 bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 transition-colors duration-300">
-            <div>
-              <h1 className="text-base font-semibold text-gray-900 dark:text-white">
+            {/* Hamburger (mobile only) */}
+            <button
+              className="lg:hidden mr-3 p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="min-w-0">
+              <h1 className="hidden lg:block text-base font-semibold text-gray-900 dark:text-white">
                 Buenos días, {username}
               </h1>
-              <p className="text-xs text-gray-400 dark:text-gray-600">
+              <p className="text-xs text-gray-400 dark:text-gray-600 truncate">
                 {new Date().toLocaleDateString("es-CO", {
                   weekday: "long", year: "numeric",
                   month: "long", day: "numeric"
