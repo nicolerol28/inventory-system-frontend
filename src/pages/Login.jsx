@@ -27,6 +27,22 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [demoError, setDemoError] = useState(null);
+
+  async function handleDemo() {
+    setDemoError(null);
+    setDemoLoading(true);
+    try {
+      const data = await loginRequest("demo@inventory.com", "demo1234");
+      login(data.token);
+      navigate("/dashboard", { replace: true });
+    } catch {
+      setDemoError("Error al cargar el demo, intenta de nuevo");
+    } finally {
+      setDemoLoading(false);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -165,6 +181,21 @@ export function Login() {
               {loading ? "Ingresando..." : "Ingresar al sistema"}
             </button>
           </form>
+
+          {/* Botón demo */}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={handleDemo}
+              disabled={demoLoading}
+              className="w-full px-4 py-2.5 rounded-lg text-sm font-medium border border-blue-600 text-blue-600 hover:bg-blue-50 disabled:opacity-50 transition-colors"
+            >
+              {demoLoading ? "Cargando demo..." : "Probar demo"}
+            </button>
+            {demoError && (
+              <p className="text-xs text-red-500 mt-1.5">{demoError}</p>
+            )}
+          </div>
 
           {/* Separador */}
           <div className="flex items-center gap-3 my-5">
