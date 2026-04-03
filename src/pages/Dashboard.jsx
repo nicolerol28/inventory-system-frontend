@@ -1,25 +1,55 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList } from "recharts";
 import { getAllProducts } from "../api/products";
 import { getActiveSuppliers } from "../api/suppliers";
 import { getActiveWarehouses } from "../api/warehouses";
 import { getStockByWarehouse, updateMinQuantity } from "../api/inventory";
+import { getInventoryInsights } from "../api/assistant";
 import { useAuth } from "../hooks/useAuth";
 
-function StatCard({ label, value, isLoading }) {
+function StatCard({ label, value, subtitle, isLoading, icon, iconBg, iconColor }) {
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 transition-colors duration-300">
-      <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">{label}</p>
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: iconBg }}>
+        {icon(iconColor)}
+      </div>
+      <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">{label}</p>
       {isLoading ? (
         <div className="h-8 w-16 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"/>
       ) : (
         <p className="text-3xl font-semibold text-gray-900 dark:text-white">{value ?? "—"}</p>
       )}
+      {subtitle && !isLoading && (
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtitle}</p>
+      )}
     </div>
   );
 }
+
+const iconProducts = (color) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/>
+    <path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"/>
+  </svg>
+);
+
+const iconSuppliers = (color) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+    <path d="M16 3.13a4 4 0 010 7.75"/>
+  </svg>
+);
+
+const iconWarehouses = (color) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+    <polyline points="9,22 9,12 15,12 15,22"/>
+  </svg>
+);
 
 function StockBadge({ belowMinimum }) {
   return (
@@ -121,6 +151,7 @@ export function Dashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stock-warehouse"] });
       queryClient.invalidateQueries({ queryKey: ["stock-warehouse-all"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-insights"] });
       setEditingStock(null);
     },
   });
@@ -134,6 +165,12 @@ export function Dashboard() {
     queryKey: ["products-count"],
     queryFn: () => getAllProducts(0, 1),
   });
+
+  const { data: activeProductsData, isLoading: loadingActiveProducts } = useQuery({
+    queryKey: ["products-count-active"],
+    queryFn: () => getAllProducts(0, 1, "", null, null, "asc", "active"),
+  });
+
 
   const { data: activeSuppliers, isLoading: loadingSuppliers } = useQuery({
     queryKey: ["suppliers-active"],
@@ -159,12 +196,28 @@ export function Dashboard() {
     enabled: !!activeWarehouseId,
   });
 
+  const { data: insightsRaw, isLoading: loadingInsights } = useQuery({
+    queryKey: ["dashboard-insights"],
+    queryFn: getInventoryInsights,
+    refetchOnWindowFocus: true,
+  });
+
+  const insights = (() => {
+    if (!insightsRaw) return null;
+    try {
+      const parsed = JSON.parse(insightsRaw);
+      return Array.isArray(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  })();
+
   const chartData = stockAll?.content
     ?.filter((s) => s.belowMinimum)
     .map((s) => ({
       name: s.productName ?? `#${s.productId}`,
       cantidad: parseFloat(s.quantity),
-      belowMinimum: true,
+      minQuantity: parseFloat(s.minQuantity),
     })) ?? [];
 
   function handleWarehouseChange(id) {
@@ -182,10 +235,108 @@ export function Dashboard() {
 
       {/* Métricas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard label="Total productos" value={products?.totalElements} isLoading={loadingProducts}/>
-        <StatCard label="Proveedores" value={activeSuppliers?.length} isLoading={loadingSuppliers}/>
-        <StatCard label="Almacenes" value={activeWarehouses?.length} isLoading={loadingActive}/>
+        <StatCard
+          label="Total productos"
+          value={products?.totalElements}
+          isLoading={loadingProducts || loadingActiveProducts}
+          iconBg="#E6F1FB"
+          iconColor="#185FA5"
+          icon={iconProducts}
+          subtitle={activeProductsData !== undefined ? `${activeProductsData.totalElements} activos` : undefined}
+        />
+        <StatCard
+          label="Proveedores"
+          value={activeSuppliers?.length}
+          isLoading={loadingSuppliers}
+          iconBg="#FCEBEB"
+          iconColor="#A32D2D"
+          icon={iconSuppliers}
+          subtitle={activeSuppliers ? `${activeSuppliers.length} activos` : undefined}
+        />
+        <StatCard
+          label="Almacenes"
+          value={activeWarehouses?.length}
+          isLoading={loadingActive}
+          iconBg="#EEEDFE"
+          iconColor="#534AB7"
+          icon={iconWarehouses}
+          subtitle={activeWarehouses ? `${activeWarehouses.length} activos` : undefined}
+        />
       </div>
+
+      {/* AI Insights */}
+      {(loadingInsights || insights) && (
+        <>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {loadingInsights
+            ? [...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-gray-100 dark:border-gray-800 p-4 bg-white dark:bg-gray-900 animate-pulse"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800"/>
+                    <div className="h-3 w-16 bg-gray-100 dark:bg-gray-800 rounded"/>
+                  </div>
+                  <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded mb-2"/>
+                  <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-3/4"/>
+                </div>
+              ))
+            : insights?.map((insight, i) => {
+                const accent =
+                  insight.tipo === "critico"
+                    ? {
+                        border: "border-red-200 dark:border-red-900",
+                        iconBg: "bg-red-50 dark:bg-red-950",
+                        iconColor: "#E24B4A",
+                        label: "Alerta",
+                        labelColor: "text-red-500 dark:text-red-400",
+                      }
+                    : insight.tipo === "warning"
+                    ? {
+                        border: "border-amber-200 dark:border-amber-900",
+                        iconBg: "bg-amber-50 dark:bg-amber-950",
+                        iconColor: "#D97706",
+                        label: "Atención",
+                        labelColor: "text-amber-600 dark:text-amber-400",
+                      }
+                    : {
+                        border: "border-blue-200 dark:border-blue-900",
+                        iconBg: "bg-blue-50 dark:bg-blue-950",
+                        iconColor: "#185FA5",
+                        label: "Info",
+                        labelColor: "text-blue-600 dark:text-blue-400",
+                      };
+
+                return (
+                  <div
+                    key={i}
+                    className={`rounded-2xl border ${accent.border} p-4 bg-white dark:bg-gray-900 transition-colors duration-300`}
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${accent.iconBg}`}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={accent.iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6L15 18H9l-.3-3C6.8 13.7 5 11.5 5 9a7 7 0 0 1 7-7z"/>
+                          <line x1="9" y1="21" x2="15" y2="21"/>
+                          <line x1="10" y1="18" x2="14" y2="18"/>
+                        </svg>
+                      </div>
+                      <span className={`text-[10px] font-semibold uppercase tracking-widest ${accent.labelColor}`}>
+                        {accent.label}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{insight.mensaje}</p>
+                  </div>
+                );
+              })}
+        </div>
+        {loadingInsights && (
+          <p className="text-xs text-center text-gray-400 dark:text-gray-500 -mt-2">
+            Analizando inventario con IA...
+          </p>
+        )}
+        </>
+      )}
 
       {/* Stock por almacén */}
       <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl transition-colors duration-300">
@@ -293,20 +444,28 @@ export function Dashboard() {
 
       {/* Gráfica */}
       <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 transition-colors duration-300">
-        <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-6">
-          Productos bajo mínimo
-        </h2>
+        <div className="flex items-center gap-2 mb-6">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Productos bajo mínimo</h2>
+          {chartData.length > 0 && (
+            <span className="text-[10px] font-semibold bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400 px-2 py-0.5 rounded-full">
+              {chartData.length}
+            </span>
+          )}
+        </div>
         {chartData.length > 0 ? (
           <>
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 24, left: 8, bottom: 0 }}>
+            <ResponsiveContainer width="100%" height={Math.max(200, chartData.length * 36)}>
+              <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 48, left: 8, bottom: 0 }}>
                 <XAxis type="number" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false}/>
                 <YAxis type="category" dataKey="name" width={63} tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false}/>
-                <Tooltip content={<CustomTooltip/>} cursor={{ fill: "rgba(37,99,235,0.05)" }}/>
-                <Bar dataKey="cantidad" radius={[0, 6, 6, 0]} maxBarSize={20}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={index} fill="#FCA5A5"/>
-                  ))}
+                <Tooltip content={<CustomTooltip/>} cursor={{ fill: "rgba(226,75,74,0.05)" }}/>
+                <Bar dataKey="cantidad" radius={[0, 6, 6, 0]} maxBarSize={20} fill="#E24B4A">
+                  <LabelList
+                    dataKey="minQuantity"
+                    position="right"
+                    formatter={(v) => `mín. ${v}`}
+                    style={{ fontSize: 10, fill: "#94A3B8" }}
+                  />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
