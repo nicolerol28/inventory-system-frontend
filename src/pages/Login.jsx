@@ -18,7 +18,10 @@ export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/dashboard";
+  const adminRoutes = ["/users", "/settings", "/forbidden"];
+  const from = adminRoutes.includes(location.state?.from?.pathname)
+    ? "/dashboard"
+    : location.state?.from?.pathname || "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
