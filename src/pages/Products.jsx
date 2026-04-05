@@ -7,6 +7,7 @@ import { getActiveCategories } from "../api/categories";
 import { getActiveUnits } from "../api/units";
 import { getActiveSuppliers } from "../api/suppliers";
 import SearchableSelect from "../components/SearchableSelect";
+import { exportToExcel } from "../utils/exportExcel";
 
 const PAGE_SIZE = 12;
 
@@ -363,6 +364,7 @@ export function Products() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showUnitDropdown, setShowUnitDropdown] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [exporting, setExporting] = useState(false);
 
 
   const { data: products, isLoading } = useQuery({
@@ -611,6 +613,47 @@ export function Products() {
               className="px-3 py-1.5 rounded-lg text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
             >
               Limpiar filtros
+            </button>
+          )}
+
+          {/* Exportar */}
+          {products?.content?.length > 0 && (
+            <button
+              disabled={exporting}
+              onClick={async () => {
+                setExporting(true);
+                try {
+                  const all = await getAllProducts(0, 10000, urlSearch, filterCategory, filterUnit, sortName, filterActive);
+                  const rows = (all.content ?? []).map((p) => ({
+                    ...p,
+                    categoryName: categories?.find(c => c.id === p.categoryId)?.name ?? "",
+                    unitName: units?.find(u => u.id === p.unitId)?.name ?? "",
+                    supplierName: suppliers?.find(s => s.id === p.supplierId)?.name ?? "",
+                    active: p.active ? "Activo" : "Inactivo",
+                  }));
+                  await exportToExcel(rows, [
+                    { key: "sku", header: "SKU" },
+                    { key: "name", header: "Nombre" },
+                    { key: "description", header: "Descripción" },
+                    { key: "purchasePrice", header: "Precio Compra" },
+                    { key: "salePrice", header: "Precio Venta" },
+                    { key: "active", header: "Estado" },
+                    { key: "categoryName", header: "Categoría" },
+                    { key: "unitName", header: "Unidad" },
+                    { key: "supplierName", header: "Proveedor" },
+                  ], "productos");
+                } finally {
+                  setExporting(false);
+                }
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              {exporting ? "Exportando..." : "Exportar"}
             </button>
           )}
         </div>

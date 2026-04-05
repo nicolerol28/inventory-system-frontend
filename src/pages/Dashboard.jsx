@@ -8,6 +8,7 @@ import { getActiveWarehouses } from "../api/warehouses";
 import { getStockByWarehouse, updateMinQuantity } from "../api/inventory";
 import { getInventoryInsights } from "../api/assistant";
 import { useAuth } from "../hooks/useAuth";
+import { exportToExcel } from "../utils/exportExcel";
 
 function StatCard({ label, value, subtitle, isLoading, icon, iconBg, iconColor }) {
   return (
@@ -144,6 +145,7 @@ export function Dashboard() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [editingStock, setEditingStock] = useState(null);
   const [minInput, setMinInput] = useState("");
+  const [exporting, setExporting] = useState(false);
   const PAGE_SIZE = 10;
 
   const updateMinMutation = useMutation({
@@ -380,6 +382,40 @@ export function Dashboard() {
           >
             Cantidad {sortOrder === "asc" ? "↑ Menor a mayor" : "↓ Mayor a menor"}
           </button>
+
+          {/* Exportar */}
+          {stock?.content?.length > 0 && (
+            <button
+              disabled={exporting}
+              onClick={async () => {
+                setExporting(true);
+                try {
+                  const activeWarehouseName = activeWarehouses?.find(w => w.id === activeWarehouseId)?.name ?? "almacen";
+                  const all = await getStockByWarehouse(activeWarehouseId, 0, 10000, "", sortOrder);
+                  const rows = (all.content ?? []).map((s) => ({
+                    ...s,
+                    belowMinimum: s.belowMinimum ? "Bajo mínimo" : "Sobre mínimo",
+                  }));
+                  await exportToExcel(rows, [
+                    { key: "productName", header: "Producto" },
+                    { key: "quantity", header: "Cantidad" },
+                    { key: "minQuantity", header: "Mínimo" },
+                    { key: "belowMinimum", header: "Estado" },
+                  ], "stock-" + activeWarehouseName);
+                } finally {
+                  setExporting(false);
+                }
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              {exporting ? "Exportando..." : "Exportar"}
+            </button>
+          )}
         </div>
 
         {/* Tabla */}
