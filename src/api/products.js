@@ -14,11 +14,15 @@ export const getActiveProducts = (page = 0, size = 20) =>
 export const getProductById = (id) =>
   axiosClient.get(`/products/${id}`).then(r => r.data);
 
-export const createProduct = (data) =>
-  axiosClient.post(`/products`, data).then(r => r.data);
+export const createProduct = (formData) =>
+  axiosClient.post(`/products`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }).then(r => r.data);
 
-export const updateProduct = (id, data) =>
-  axiosClient.put(`/products/${id}`, data).then(r => r.data);
+export const updateProduct = (id, formData) =>
+  axiosClient.put(`/products/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }).then(r => r.data);
 
 export const deactivateProduct = (id) =>
   axiosClient.delete(`/products/${id}`).then(r => r.data);
