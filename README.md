@@ -2,14 +2,52 @@
  
 React frontend for the Inventory Management System. Built with Vite, Tailwind CSS v4, and TanStack Query.
  
-**[Live Demo](https://inventory.nicoleroldan.com)** · **[Backend Repository](https://github.com/nicolerol28/inventory-system-backend)**
+**[Live Demo](https://inventory.nicoleroldan.com)** · **[Backend Repository](https://github.com/nicolerol28/inventory-system-backend)** · **[Frontend Repository](https://github.com/nicolerol28/inventory-system-frontend)**
  
 > Demo credentials — click **"Probar demo"** ("Try demo") on the login page for instant access with pre-seeded data. Data resets nightly.
  
 ---
+
+## Screenshots
+
+### Login
+![Login](screenshots/login.png)
+
+### Dashboard with AI Insights
+![Dashboard](screenshots/dashboard.png)
+
+### Products — Table View
+![Products Table](screenshots/products-table.png)
+
+### Products — Catalog View
+![Products Catalog](screenshots/products-catalog.png)
+
+### Product Detail Modal
+![Product Modal](screenshots/product-modal.png)
+
+### Inventory Movements
+![Movements](screenshots/movements.png)
+
+### Suppliers
+![Suppliers](screenshots/suppliers.png)
+
+### Warehouses
+![Warehouses](screenshots/warehouses.png)
+
+### Settings — Categories
+![Settings Categories](screenshots/settings-category.png)
+
+### Settings — Units
+![Settings Units](screenshots/settings-unit.png)
+
+### Users
+![Users](screenshots/users.png)
+
+---
  
 ## Table of Contents
  
+ - [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
 - [Features](#features)
 - [Architecture](#architecture)
