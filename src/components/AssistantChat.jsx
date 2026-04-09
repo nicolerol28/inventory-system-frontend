@@ -24,11 +24,16 @@ export function AssistantChat({ isOpen, onClose }) {
     try {
       const response = await axiosClient.post("/assistant/chat", { message: text });
       setMessages((prev) => [...prev, { role: "assistant", text: response.data.reply }]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", text: "Lo siento, no pude procesar tu pregunta. Intenta de nuevo." },
-      ]);
+    } catch (error) {
+      let errorText;
+      if (error.response?.status === 429) {
+        errorText = "Límite de solicitudes alcanzado. Espera un momento.";
+      } else if (error.response?.status === 400) {
+        errorText = error.response.data?.message || "Mensaje inválido.";
+      } else {
+        errorText = "Error al conectar con el asistente.";
+      }
+      setMessages((prev) => [...prev, { role: "assistant", text: errorText }]);
     } finally {
       setIsLoading(false);
     }
