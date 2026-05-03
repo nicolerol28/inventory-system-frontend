@@ -5,6 +5,8 @@ React frontend for the Inventory Management System. Built with Vite, Tailwind CS
 **[Live Demo](https://inventory.nicoleroldan.com)** · **[Backend Repository](https://github.com/nicolerol28/inventory-system-backend)** · **[Frontend Repository](https://github.com/nicolerol28/inventory-system-frontend)**
  
 > Demo credentials — click **"Probar demo"** ("Try demo") on the login page for instant access with pre-seeded data. Data resets nightly.
+
+> > **Note:** This is a portfolio project. Live demos may be unavailable as services are scaled to zero to manage hosting costs.
  
 ---
 
